@@ -1,0 +1,75 @@
+# =========================
+# Core dependencies
+# =========================
+pip>=23.3; sys_platform == 'darwin'
+wheel; sys_platform == 'darwin'
+PyYAML; sys_platform == 'darwin'
+numpy>=1.24.2         # 우선 순위: 위 목록 기준
+requests==2.31.0       # 명확한 버전 지정
+tqdm==4.65.0
+wget
+yt-dlp
+runpod
+
+# =========================
+# Audio processing
+# =========================
+ffmpeg-python>=0.2.0
+faiss-cpu==1.7.3
+librosa==0.9.1          # 위 목록 우선
+scipy==1.11.1
+soundfile==0.12.1
+noisereduce
+pedalboard==0.7.7
+stftpitchshift
+sox==1.4.1              # 위 목록의 sox 우선
+soxr
+pyworld==0.3.4
+praat-parselmouth>=0.4.2
+pydub==0.25.1
+deemix
+
+# =========================
+# Machine learning and deep learning
+# =========================
+torch==2.0.1+cu118       # 위 목록 기준 (cu118)
+torchaudio               # cu118에 맞는 버전 자동 매칭
+torchvision
+torchcrepe==0.0.20       # 위 목록 기준
+torchfcpe
+fairseq==0.12.2
+onnx2torch>=1.5
+onnxruntime-gpu==1.17.1
+numba                   # linux용 일반 버전
+numba==0.61.0; sys_platform == 'darwin' or sys_platform == 'win32'
+omegaconf>=2.0.6; sys_platform == 'darwin'
+transformers==4.44.2
+einops
+diffq>=0.2
+julius>=0.2
+ml_collections
+resampy>=0.4
+beartype==0.18.5
+rotary-embedding-torch==0.6.1
+
+# =========================
+# Visualization and UI
+# =========================
+matplotlib==3.7.2
+tensorboard
+tensorboardX
+gradio==3.39.0          # 위 목록 우선
+
+# =========================
+# Miscellaneous utilities
+# =========================
+certifi>=2023.07.22; sys_platform == 'darwin'
+antlr4-python3-runtime==4.8; sys_platform == 'darwin'
+edge-tts==6.1.9
+pypresence
+beautifulsoup4
+
+# =========================
+# PyTorch CUDA wheel index
+# =========================
+--find-links https://download.pytorch.org/whl/torch_stable.html
