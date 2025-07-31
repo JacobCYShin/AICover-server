@@ -26,13 +26,17 @@ logger = logging.getLogger(__name__)
 # Global variables for model caching
 separator = None
 available_voice_models = []
+_initialized = False
 
-def init():
+def init_models():
     """
     Initialize the model and load required resources.
-    This function is called once when the container starts.
+    This function is called lazily on first request.
     """
-    global separator, available_voice_models
+    global separator, available_voice_models, _initialized
+    
+    if _initialized:
+        return
     
     logger.info("🚀 Initializing AICoverGen Serverless Handler...")
     
@@ -48,151 +52,103 @@ def init():
         rvc_models_dir = "/app/rvc_models"
         if os.path.exists(rvc_models_dir):
             available_voice_models = [
-                d for d in os.listdir(rvc_models_dir) 
-                if os.path.isdir(os.path.join(rvc_models_dir, d)) 
+                d for d in os.listdir(rvc_models_dir)
+                if os.path.isdir(os.path.join(rvc_models_dir, d))
                 and d not in ['hubert_base.pt', 'MODELS.txt', 'public_models.json', 'rmvpe.pt']
             ]
         
         logger.info(f"✅ Initialization complete. Available voice models: {available_voice_models}")
+        _initialized = True
         
     except Exception as e:
         logger.error(f"❌ Initialization failed: {e}")
         raise
 
-def handler(event: Dict[str, Any]) -> Dict[str, Any]:
+def handler(job: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Main handler function for RunPod serverless inference.
-    
-    Args:
-        event: Dictionary containing the input data
-        
-    Returns:
-        Dictionary containing the response data
+    Main handler function for RunPod serverless requests.
     """
-    try:
-        logger.info("📥 Received inference request")
-        
-        # Parse input
-        input_data = event.get("input", {})
-        
-        # Validate required fields
-        if "audio_data" not in input_data:
-            return {
-                "error": "Missing required field: audio_data"
-            }
-        
-        if "voice_model" not in input_data:
-            return {
-                "error": "Missing required field: voice_model"
-            }
-        
-        # Extract parameters
-        audio_data = input_data["audio_data"]
-        voice_model = input_data["voice_model"]
-        pitch_change = input_data.get("pitch_change", 0)
-        use_uvr = input_data.get("use_uvr", True)
-        output_format = input_data.get("output_format", "mp3")
-        
-        # Validate voice model
-        if voice_model not in available_voice_models:
-            return {
-                "error": f"Voice model '{voice_model}' not found. Available models: {available_voice_models}"
-            }
-        
-        # Decode audio data
-        try:
-            if isinstance(audio_data, str):
-                # Base64 encoded string
-                audio_bytes = base64.b64decode(audio_data)
-            else:
-                # Already bytes
-                audio_bytes = audio_data
-        except Exception as e:
-            return {
-                "error": f"Failed to decode audio data: {e}"
-            }
-        
-        # Save audio to temporary file
-        with tempfile.NamedTemporaryFile(suffix=f".{output_format}", delete=False) as temp_file:
-            temp_file.write(audio_bytes)
-            temp_audio_path = temp_file.name
-        
-        try:
-            logger.info(f"🎵 Processing audio with voice model: {voice_model}")
-            
-            # Run the cover generation pipeline
-            cover_path = song_cover_pipeline(
-                song_input=temp_audio_path,
-                voice_model=voice_model,
-                pitch_change=pitch_change,
-                keep_files=False,
-                is_webui=0,
-                use_uvr=use_uvr,
-                output_format=output_format
-            )
-            
-            # Read the generated cover
-            with open(cover_path, 'rb') as f:
-                cover_bytes = f.read()
-            
-            # Encode to base64
-            cover_base64 = base64.b64encode(cover_bytes).decode('utf-8')
-            
-            # Clean up temporary files
-            os.unlink(temp_audio_path)
-            if os.path.exists(cover_path):
-                os.unlink(cover_path)
-            
-            logger.info("✅ Cover generation completed successfully")
-            
-            return {
-                "success": True,
-                "cover_audio": cover_base64,
-                "output_format": output_format,
-                "voice_model": voice_model,
-                "pitch_change": pitch_change,
-                "use_uvr": use_uvr
-            }
-            
-        except Exception as e:
-            logger.error(f"❌ Cover generation failed: {e}")
-            return {
-                "error": f"Cover generation failed: {str(e)}"
-            }
-        finally:
-            # Clean up temporary files
-            if os.path.exists(temp_audio_path):
-                os.unlink(temp_audio_path)
+    # Lazy initialization on first request
+    if not _initialized:
+        init_models()
     
-    except Exception as e:
-        logger.error(f"❌ Handler error: {e}")
+    input_data = job.get("input", {})
+    
+    # Extract parameters
+    rvc_dirname = input_data.get("rvc_dirname")
+    song_input = input_data.get("song_input")
+    pitch_change_all = input_data.get("pitch_change_all", 0)
+    output_format = input_data.get("output_format", "mp3")
+    
+    # Validate required parameters
+    if not rvc_dirname or not song_input:
         return {
-            "error": f"Handler error: {str(e)}"
+            "error": "Missing required parameters: 'rvc_dirname' and 'song_input'",
+            "available_models": available_voice_models
         }
-
-def get_available_models() -> Dict[str, Any]:
-    """
-    Get available voice models.
     
-    Returns:
-        Dictionary containing available models
-    """
-    return {
-        "available_models": available_voice_models,
-        "total_count": len(available_voice_models)
-    }
-
-# Health check endpoint
-def health_check() -> Dict[str, Any]:
-    """
-    Health check function.
+    # Validate voice model
+    if rvc_dirname not in available_voice_models:
+        return {
+            "error": f"Voice model '{rvc_dirname}' not found",
+            "available_models": available_voice_models
+        }
     
-    Returns:
-        Dictionary containing health status
-    """
-    return {
-        "status": "healthy",
-        "gpu_available": torch.cuda.is_available(),
-        "gpu_count": torch.cuda.device_count() if torch.cuda.is_available() else 0,
-        "available_models": len(available_voice_models)
-    } 
+    try:
+        logger.info(f"🎵 Processing cover generation request...")
+        logger.info(f"📁 Voice Model: {rvc_dirname}")
+        logger.info(f"🎧 Input: {song_input}")
+        logger.info(f"🎹 Pitch Change: {pitch_change_all}")
+        
+        # Call the main pipeline
+        result = song_cover_pipeline(
+            rvc_dirname=rvc_dirname,
+            song_input=song_input,
+            pitch_change_all=pitch_change_all,
+            keep_orig=False,
+            main_gain=0,
+            backup_gain=0,
+            inst_gain=0,
+            index_rate=0.5,
+            filter_radius=3,
+            rms_mix_rate=0.25,
+            f0_method="rmvpe",
+            crepe_hop_length=128,
+            protect=0.33,
+            pitch_change_vocals=0,
+            pitch_change_inst=0,
+            is_webui=False,
+            progress=None,
+            output_format=output_format,
+            use_uvr=True  # Use UVR separation
+        )
+        
+        if result and len(result) > 0:
+            output_file = result[0] if isinstance(result, list) else result
+            
+            # Read output file and encode as base64
+            if os.path.exists(output_file):
+                with open(output_file, 'rb') as f:
+                    audio_data = base64.b64encode(f.read()).decode('utf-8')
+                
+                file_size = os.path.getsize(output_file)
+                
+                return {
+                    "success": True,
+                    "output_file": os.path.basename(output_file),
+                    "audio_data": audio_data,
+                    "file_size": file_size,
+                    "format": output_format
+                }
+            else:
+                return {"error": "Output file not found"}
+        else:
+            return {"error": "Cover generation failed"}
+            
+    except Exception as e:
+        logger.error(f"❌ Error in handler: {str(e)}")
+        return {"error": f"Processing failed: {str(e)}"}
+
+# RunPod serverless start
+import runpod
+runpod.serverless.start({"handler": handler}) 
