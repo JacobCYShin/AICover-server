@@ -31,6 +31,7 @@ try:
             d for d in os.listdir(rvc_models_dir)
             if os.path.isdir(os.path.join(rvc_models_dir, d))
             and d not in ['hubert_base.pt', 'MODELS.txt', 'public_models.json', 'rmvpe.pt']
+            and not d.startswith('.')  # .ipynb_checkpoints, .DS_Store 등 숨김 폴더 제외
         ]
     logger.info(f"✅ Initialization complete. Available voice models: {available_voice_models}")
 except Exception as e:

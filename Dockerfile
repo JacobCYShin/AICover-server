@@ -50,6 +50,10 @@ RUN ln -s /usr/local/lib/python3.10/dist-packages/nvidia/cudnn/lib/libcudnn.so.9
 # 작업 디렉토리를 AICover-server로 변경 (handler.py가 run.py를 찾을 수 있도록)
 WORKDIR /app/AICover-server
 
+# 불필요한 파일들 정리 (.ipynb_checkpoints, .DS_Store 등)
+RUN find /app/AICover-server -name ".*" -type d -exec rm -rf {} + 2>/dev/null || true && \
+    find /app/AICover-server -name ".DS_Store" -type f -delete 2>/dev/null || true
+
 # RunPod 네트워크 볼륨 마운트 포인트 준비
 # rvc_models와 uvr_models 모두 /runpod-volume/에서 마운트됨
 RUN rm -rf /app/AICover-server/rvc_models && \
