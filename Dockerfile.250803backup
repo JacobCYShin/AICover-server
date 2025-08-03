@@ -1,35 +1,13 @@
 # Dockerfile
 
-# Use the latest CUDA 12 runtime as base image (from Dockerfile.audio-separator)
-FROM nvidia/cuda:12.3.1-devel-ubuntu22.04
+FROM audio-separator-gpu:latest 
 
-# Set the working directory in the container
-WORKDIR /workdir
-
-# Install basic dependencies (from Dockerfile.audio-separator)
-RUN apt-get update && apt-get install -y \
-    ffmpeg \
-    build-essential \
-    python3 \
-    python3-pip \
-    sox \
-    && rm -rf /var/lib/apt/lists/*
-
-RUN python3 -m pip install --upgrade pip
-
-# Install the CUDA 12 compatible version of ONNXRuntime (from Dockerfile.audio-separator)
-# See https://onnxruntime.ai/docs/install/
-RUN pip install onnxruntime-gpu --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/
-
-# Install audio-separator without any specific onnxruntime (from Dockerfile.audio-separator)
-RUN --mount=type=cache,target=/root/.cache \
-    pip3 install "audio-separator"
-
-# Set up AICover-server application
 WORKDIR /app
 
 # AICover-server 복사
 COPY . /app/AICover-server
+
+RUN apt-get update && apt-get install -y sox
 
 ENV LD_LIBRARY_PATH=/usr/local/lib/python3.10/dist-packages/nvidia/cudnn/lib:$LD_LIBRARY_PATH
 
