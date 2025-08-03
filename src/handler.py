@@ -8,7 +8,7 @@ import logging
 from typing import Dict, Any
 import torch
 import sys
-sys.path.append('/app/src')
+sys.path.append('/app/AICover-server/src')
 from main import song_cover_pipeline
 from uvr_integrated.separator import Separator
 

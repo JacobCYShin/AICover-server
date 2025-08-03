@@ -21,31 +21,10 @@ RUN pip install --upgrade "pip<24.0" && \
 RUN ln -s /usr/local/lib/python3.10/dist-packages/nvidia/cudnn/lib/libcudnn.so.9 /usr/lib/libcudnn.so.9 && \
     ln -s /usr/local/lib/python3.10/dist-packages/nvidia/cudnn/lib/libcudnn.so.9 /usr/lib/x86_64-linux-gnu/libcudnn.so.9 && \
     ln -s /usr/local/cuda/lib64/libcublas.so.12 /usr/lib/x86_64-linux-gnu/libcublas.so.12 && \
-    ln -s /usr/local/lib/python3.10/dist-packages/nvidia/cudnn/lib/libcudnn_graph.so.9 /usr/lib/libcudnn_graph.so.9 && \
-    ln -s /usr/local/lib/python3.10/dist-packages/nvidia/cudnn/lib/libcudnn_graph.so.9 /usr/lib/x86_64-linux-gnu/libcudnn_graph.so.9 && \
     ldconfig
 
-# 작업 디렉토리를 AICover-server로 변경 (handler.py가 run.py를 찾을 수 있도록)
-WORKDIR /app/AICover-server
+# entrypoint 복사 및 실행 권한
+COPY entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
 
-# UVR 모델 디렉토리 미리 생성 및 환경변수 설정
-RUN mkdir -p /app/AICover-server/uvr_models
-ENV AUDIO_SEPARATOR_MODEL_DIR=/app/AICover-server/uvr_models
-
-# 선택사항: UVR 모델들을 빌드 시 미리 다운로드 (Cold start 최적화)
-# 주석을 해제하면 빌드 시 다운로드됩니다
-# RUN python3 download_uvr_models.py
-
-# 출력 디렉토리 미리 생성
-RUN mkdir -p /app/AICover-server/song_output && \
-    mkdir -p /app/AICover-server/temp_uploads
-
-# 권한 설정
-RUN chmod -R 755 /app/AICover-server
-
-# Cold start 최적화를 위한 모델 사전 로딩 스크립트 (선택사항)
-COPY warmup.py /app/AICover-server/warmup.py
-RUN python3 warmup.py || echo "Warmup completed with warnings"
-
-# RunPod serverless 기본 진입점 - entrypoint.sh 없이 바로 handler.py 실행
-CMD ["python3", "-u", "handler.py"]
+CMD ["/app/entrypoint.sh"]
