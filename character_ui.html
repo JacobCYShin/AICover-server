@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 캐릭터 생성 & 대화 시스템</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#64748B',
+                        accent: '#F59E0B'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useRef } = React;
+
+        // 메인 컴포넌트
+        function CharacterUI() {
+            const [currentStep, setCurrentStep] = useState(1);
+            const [uploadedImage, setUploadedImage] = useState(null);
+            const [characterData, setCharacterData] = useState({
+                age: '',
+                job: '',
+                style: ''
+            });
+            const [activeTab, setActiveTab] = useState('situation');
+            const [chatInput, setChatInput] = useState('');
+            const fileInputRef = useRef(null);
+
+            const handleImageUpload = (event) => {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        setUploadedImage(e.target.result);
+                        setCurrentStep(2);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+
+            const generateCharacter = () => {
+                setCurrentStep(3);
+            };
+
+            return (
+                <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
+                    {/* 헤더 */}
+                    <div className="text-center mb-8">
+                        <h1 className="text-4xl font-bold text-gray-800 mb-2">AI 캐릭터 생성 & 대화 시스템</h1>
+                        <p className="text-gray-600">초개인화 소통 환경을 통해, 사용자는 나만의 소통 방식을 가질 수 있습니다.</p>
+                    </div>
+
+                    <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-6">
+                        {/* 메인 플로우 영역 */}
+                        <div className="lg:col-span-3">
+                            <div className="bg-white rounded-xl shadow-lg p-6">
+                                {/* 단계 표시기 */}
+                                <div className="flex items-center justify-center mb-8">
+                                    <div className="flex items-center space-x-4">
+                                        {[1, 2, 3].map((step) => (
+                                            <React.Fragment key={step}>
+                                                <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 
+                                                    ${currentStep >= step 
+                                                        ? 'bg-primary text-white border-primary' 
+                                                        : 'bg-gray-100 text-gray-400 border-gray-300'}`}>
+                                                    {step}
+                                                </div>
+                                                {step < 3 && (
+                                                    <div className={`w-16 h-1 
+                                                        ${currentStep > step ? 'bg-primary' : 'bg-gray-300'}`}></div>
+                                                )}
+                                            </React.Fragment>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* 단계별 콘텐츠 */}
+                                <div className="flex justify-center space-x-8">
+                                    {/* 1단계: 이미지 업로드 */}
+                                    <div className={`flex-1 max-w-xs transition-all duration-300 
+                                        ${currentStep >= 1 ? 'opacity-100' : 'opacity-50'}`}>
+                                        <div className="bg-gray-50 rounded-lg p-6 text-center border-2 border-dashed border-gray-300 hover:border-primary transition-colors">
+                                            <div className="text-2xl mb-2">📸</div>
+                                            <h3 className="font-semibold text-gray-800 mb-2">이미지 업로드</h3>
+                                            
+                                            {!uploadedImage ? (
+                                                <>
+                                                    <div className="w-24 h-24 bg-gray-200 rounded-lg mx-auto mb-4 flex items-center justify-center">
+                                                        <span className="text-gray-400">사진</span>
+                                                    </div>
+                                                    <button 
+                                                        onClick={() => fileInputRef.current?.click()}
+                                                        className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+                                                    >
+                                                        사진 업로드
+                                                    </button>
+                                                    <input 
+                                                        ref={fileInputRef}
+                                                        type="file" 
+                                                        accept="image/*" 
+                                                        onChange={handleImageUpload}
+                                                        className="hidden"
+                                                    />
+                                                </>
+                                            ) : (
+                                                <div className="w-24 h-24 mx-auto mb-4 overflow-hidden rounded-lg">
+                                                    <img src={uploadedImage} alt="업로드된 이미지" className="w-full h-full object-cover" />
+                                                </div>
+                                            )}
+                                            
+                                            <div className="text-sm text-gray-600 space-y-1">
+                                                <p>• 나이</p>
+                                                <p>• 직업</p>
+                                                <p>• 스타일</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* 화살표 */}
+                                    <div className="flex items-center">
+                                        <div className="text-3xl text-gray-400">→</div>
+                                    </div>
+
+                                    {/* 2단계: 캐릭터화 */}
+                                    <div className={`flex-1 max-w-xs transition-all duration-300 
+                                        ${currentStep >= 2 ? 'opacity-100' : 'opacity-50'}`}>
+                                        <div className="bg-gray-50 rounded-lg p-6 text-center">
+                                            <div className="text-2xl mb-2">🎭</div>
+                                            <h3 className="font-semibold text-gray-800 mb-2">캐릭터화</h3>
+                                            
+                                            <div className="w-24 h-24 bg-blue-100 rounded-lg mx-auto mb-4 flex items-center justify-center">
+                                                <div className="text-4xl">👤</div>
+                                            </div>
+                                            
+                                            {currentStep >= 2 && (
+                                                <button 
+                                                    onClick={generateCharacter}
+                                                    className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors mb-4"
+                                                >
+                                                    캐릭터 생성
+                                                </button>
+                                            )}
+                                            
+                                            <div className="text-sm text-gray-600">
+                                                <p>변환 방식 선택</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* 화살표 */}
+                                    <div className="flex items-center">
+                                        <div className="text-3xl text-gray-400">→</div>
+                                    </div>
+
+                                    {/* 3단계: 소통 아바타 */}
+                                    <div className={`flex-1 max-w-xs transition-all duration-300 
+                                        ${currentStep >= 3 ? 'opacity-100' : 'opacity-50'}`}>
+                                        <div className="bg-gray-50 rounded-lg p-6 text-center">
+                                            <div className="text-2xl mb-2">💬</div>
+                                            <h3 className="font-semibold text-gray-800 mb-2">소통 아바타</h3>
+                                            
+                                            <div className="w-24 h-24 bg-green-100 rounded-lg mx-auto mb-4 flex items-center justify-center relative">
+                                                <div className="text-4xl">🤖</div>
+                                                {currentStep >= 3 && (
+                                                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full animate-pulse"></div>
+                                                )}
+                                            </div>
+                                            
+                                            <div className="text-sm text-gray-600 space-y-1">
+                                                <p>• 카페</p>
+                                                <p>• 놀이공원</p>
+                                                <p>• 영화관</p>
+                                                <p>• 학교</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* 사이드 패널 */}
+                        <div className="lg:col-span-1">
+                            <div className="bg-white rounded-xl shadow-lg p-6">
+                                <h3 className="font-semibold text-gray-800 mb-4">상황 설정</h3>
+                                
+                                {/* 탭 메뉴 */}
+                                <div className="border-b border-gray-200 mb-4">
+                                    <div className="flex space-x-1">
+                                        {[
+                                            { id: 'situation', label: '상황 선택' },
+                                            { id: 'chat', label: '대화 입력' },
+                                            { id: 'action', label: '행동 입력' }
+                                        ].map((tab) => (
+                                            <button
+                                                key={tab.id}
+                                                onClick={() => setActiveTab(tab.id)}
+                                                className={`px-3 py-2 text-sm font-medium rounded-t-lg transition-colors
+                                                    ${activeTab === tab.id 
+                                                        ? 'text-primary border-b-2 border-primary' 
+                                                        : 'text-gray-600 hover:text-gray-800'}`}
+                                            >
+                                                {tab.label}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* 탭 콘텐츠 */}
+                                <div className="space-y-4">
+                                    {activeTab === 'situation' && (
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                상황 선택
+                                            </label>
+                                            <div className="grid grid-cols-2 gap-2">
+                                                {['카페', '놀이공원', '영화관', '학교'].map((place) => (
+                                                    <button key={place} className="p-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50">
+                                                        {place}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {activeTab === 'chat' && (
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                대화 입력
+                                            </label>
+                                            <div className="space-y-3">
+                                                <div className="flex space-x-2">
+                                                    <button className="flex-1 p-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50">
+                                                        문장(TTS)
+                                                    </button>
+                                                    <button className="flex-1 p-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50">
+                                                        그림 생성
+                                                    </button>
+                                                </div>
+                                                <textarea 
+                                                    value={chatInput}
+                                                    onChange={(e) => setChatInput(e.target.value)}
+                                                    placeholder="대화 내용을 입력하세요..."
+                                                    className="w-full p-3 border border-gray-300 rounded-lg resize-none"
+                                                    rows={3}
+                                                />
+                                                <button className="w-full p-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50">
+                                                    발화
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {activeTab === 'action' && (
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                행동 입력
+                                            </label>
+                                            <div className="space-y-2">
+                                                {['라면 먹기', '햄버거 먹기', '커피 마시기', '산책하기'].map((action) => (
+                                                    <button key={action} className="w-full p-2 text-sm text-left border border-gray-300 rounded-lg hover:bg-gray-50">
+                                                        {action}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* 하단 대화 모드 버튼 */}
+                    <div className="max-w-7xl mx-auto mt-8">
+                        <div className="bg-white rounded-xl shadow-lg p-6">
+                            <div className="text-center mb-4">
+                                <p className="text-gray-600">대화 데이터 추가 학습을 통한 품질 고도화 및 추천 향상</p>
+                            </div>
+                            <div className="flex justify-center space-x-4">
+                                <button className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                                    나와의 대화
+                                    <div className="text-xs mt-1">자기 인식 강화</div>
+                                    <div className="text-xs">감정 안정</div>
+                                </button>
+                                <button className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                                    1대1 대화
+                                    <div className="text-xs mt-1">맞춤형 대화 지원</div>
+                                    <div className="text-xs">표현력 및 반응어 정답 정답력 향상</div>
+                                </button>
+                                <button className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                                    N대1 대화
+                                    <div className="text-xs mt-1">교육, 워크샵 인적자원 강화</div>
+                                    <div className="text-xs">그룹 내 상호 이해 증진</div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // 앱 렌더링
+        ReactDOM.render(<CharacterUI />, document.getElementById('root'));
+    </script>
+</body>
+</html> 

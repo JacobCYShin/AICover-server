@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 캐릭터 생성 시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .step-arrow::before {
+            content: '→';
+            font-size: 2rem;
+            color: #9CA3AF;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    
+    <!-- 헤더 -->
+    <div class="text-center py-8">
+        <h1 class="text-4xl font-bold text-gray-800 mb-2">AI 캐릭터 생성 & 대화 시스템</h1>
+        <p class="text-gray-600">초개인화 소통 환경을 통해, 사용자는 나만의 소통 방식을 가질 수 있습니다.</p>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-4 gap-6">
+        
+        <!-- 메인 플로우 영역 (3칸) -->
+        <div class="lg:col-span-3">
+            <div class="bg-white rounded-xl shadow-lg p-8">
+                
+                <!-- 3단계 플로우 -->
+                <div class="flex items-center justify-center space-x-8 mb-8">
+                    
+                    <!-- 1단계: 이미지 업로드 -->
+                    <div class="flex-1 max-w-xs">
+                        <div class="bg-blue-50 rounded-xl p-6 text-center border-2 border-dashed border-blue-300 hover:border-blue-500 transition-all duration-300">
+                            <div class="text-3xl mb-3">📸</div>
+                            <h3 class="font-bold text-lg text-gray-800 mb-3">이미지 업로드</h3>
+                            
+                            <div class="w-20 h-20 bg-gray-200 rounded-lg mx-auto mb-4 flex items-center justify-center">
+                                <span class="text-gray-500">사진</span>
+                            </div>
+                            
+                            <button class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors mb-4">
+                                사진 업로드
+                            </button>
+                            
+                            <div class="text-sm text-gray-600 space-y-1">
+                                <p>• 나이</p>
+                                <p>• 직업</p>
+                                <p>• 스타일</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 화살표 -->
+                    <div class="step-arrow"></div>
+
+                    <!-- 2단계: 캐릭터화 -->
+                    <div class="flex-1 max-w-xs">
+                        <div class="bg-green-50 rounded-xl p-6 text-center border-2 border-green-300">
+                            <div class="text-3xl mb-3">🎭</div>
+                            <h3 class="font-bold text-lg text-gray-800 mb-3">캐릭터화</h3>
+                            
+                            <div class="w-20 h-20 bg-green-200 rounded-lg mx-auto mb-4 flex items-center justify-center">
+                                <div class="text-3xl">👤</div>
+                            </div>
+                            
+                            <button class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors mb-4">
+                                캐릭터 생성
+                            </button>
+                            
+                            <div class="text-sm text-gray-600">
+                                <p>변환 방식 선택</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 화살표 -->
+                    <div class="step-arrow"></div>
+
+                    <!-- 3단계: 소통 아바타 -->
+                    <div class="flex-1 max-w-xs">
+                        <div class="bg-purple-50 rounded-xl p-6 text-center border-2 border-purple-300">
+                            <div class="text-3xl mb-3">💬</div>
+                            <h3 class="font-bold text-lg text-gray-800 mb-3">소통 아바타</h3>
+                            
+                            <div class="w-20 h-20 bg-purple-200 rounded-lg mx-auto mb-4 flex items-center justify-center relative">
+                                <div class="text-3xl">🤖</div>
+                                <div class="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                            </div>
+                            
+                            <div class="text-sm text-gray-600 space-y-1">
+                                <p>• 카페</p>
+                                <p>• 놀이공원</p>
+                                <p>• 영화관</p>
+                                <p>• 학교</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 사이드 패널 (1칸) -->
+        <div class="lg:col-span-1">
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="font-bold text-lg text-gray-800 mb-6">설정 패널</h3>
+                
+                <!-- 탭 메뉴 -->
+                <div class="border-b border-gray-200 mb-6">
+                    <div class="flex flex-col space-y-2">
+                        <button class="text-left px-3 py-2 text-blue-600 bg-blue-50 rounded-lg font-medium">
+                            상황 선택
+                        </button>
+                        <button class="text-left px-3 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-lg">
+                            대화 입력
+                        </button>
+                        <button class="text-left px-3 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-lg">
+                            행동 입력
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 상황 선택 탭 -->
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-3">상황 선택</label>
+                        <div class="grid grid-cols-1 gap-2">
+                            <button class="p-3 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 text-left">☕ 카페</button>
+                            <button class="p-3 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 text-left">🎡 놀이공원</button>
+                            <button class="p-3 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 text-left">🎬 영화관</button>
+                            <button class="p-3 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 text-left">🏫 학교</button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-3">대화 기능</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button class="p-2 text-xs bg-blue-100 text-blue-800 rounded-lg">문장(TTS)</button>
+                            <button class="p-2 text-xs bg-blue-100 text-blue-800 rounded-lg">그림 생성</button>
+                        </div>
+                        <textarea 
+                            placeholder="대화 내용을 입력하세요..."
+                            class="w-full mt-3 p-3 border border-gray-300 rounded-lg resize-none text-sm"
+                            rows="3"
+                        ></textarea>
+                        <button class="w-full mt-2 p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm">발화</button>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-3">행동 입력</label>
+                        <div class="space-y-2">
+                            <button class="w-full p-2 text-sm text-left border border-gray-300 rounded-lg hover:bg-gray-50">🍜 라면 먹기</button>
+                            <button class="w-full p-2 text-sm text-left border border-gray-300 rounded-lg hover:bg-gray-50">🍔 햄버거 먹기</button>
+                            <button class="w-full p-2 text-sm text-left border border-gray-300 rounded-lg hover:bg-gray-50">☕ 커피 마시기</button>
+                            <button class="w-full p-2 text-sm text-left border border-gray-300 rounded-lg hover:bg-gray-50">🚶 산책하기</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 하단 대화 모드 버튼 -->
+    <div class="max-w-7xl mx-auto px-6 py-8">
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <div class="text-center mb-6">
+                <p class="text-gray-600 font-medium">대화 데이터 추가 학습을 통한 품질 고도화 및 추천 향상</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- 나와의 대화 -->
+                <div class="bg-blue-600 text-white rounded-xl p-6 text-center hover:bg-blue-700 transition-colors cursor-pointer">
+                    <h3 class="font-bold text-lg mb-2">나와의 대화</h3>
+                    <div class="text-sm space-y-1">
+                        <p>• 자기 인식 강화</p>
+                        <p>• 감정 안정</p>
+                    </div>
+                </div>
+
+                <!-- 1대1 대화 -->
+                <div class="bg-blue-600 text-white rounded-xl p-6 text-center hover:bg-blue-700 transition-colors cursor-pointer">
+                    <h3 class="font-bold text-lg mb-2">1대1 대화</h3>
+                    <div class="text-sm space-y-1">
+                        <p>• 맞춤형 대화 지원</p>
+                        <p>• 표현력 및 반응력 향상</p>
+                    </div>
+                </div>
+
+                <!-- N대1 대화 -->
+                <div class="bg-blue-600 text-white rounded-xl p-6 text-center hover:bg-blue-700 transition-colors cursor-pointer">
+                    <h3 class="font-bold text-lg mb-2">N대1 대화</h3>
+                    <div class="text-sm space-y-1">
+                        <p>• 교육, 워크샵 인적자원 강화</p>
+                        <p>• 그룹 내 상호 이해 증진</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 간단한 JavaScript 인터랙션 -->
+    <script>
+        // 탭 전환 기능
+        const tabButtons = document.querySelectorAll('.space-y-2 button');
+        tabButtons.forEach((button, index) => {
+            button.addEventListener('click', () => {
+                // 모든 탭 버튼 스타일 리셋
+                tabButtons.forEach(btn => {
+                    btn.className = 'text-left px-3 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-lg';
+                });
+                // 선택된 탭 활성화
+                button.className = 'text-left px-3 py-2 text-blue-600 bg-blue-50 rounded-lg font-medium';
+            });
+        });
+
+        // 이미지 업로드 시뮬레이션
+        const uploadButton = document.querySelector('.bg-blue-600');
+        uploadButton.addEventListener('click', () => {
+            alert('이미지 업로드 기능 (실제 구현 시 파일 선택 창이 열립니다)');
+        });
+
+        // 캐릭터 생성 시뮬레이션
+        const generateButton = document.querySelector('.bg-green-600');
+        generateButton.addEventListener('click', () => {
+            alert('캐릭터 생성 중... (실제 구현 시 AI 처리 과정이 실행됩니다)');
+        });
+
+        // 대화 모드 버튼 클릭
+        const chatModeButtons = document.querySelectorAll('.bg-blue-600.rounded-xl');
+        chatModeButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const mode = button.querySelector('h3').textContent;
+                alert(`${mode} 모드가 선택되었습니다.`);
+            });
+        });
+    </script>
+</body>
+</html> 

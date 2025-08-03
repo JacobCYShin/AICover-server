@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>AI 캐릭터 - 모바일</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .touch-btn {
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        .step-circle {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen pb-20">
+    
+    <!-- 상단 헤더 -->
+    <header class="bg-white shadow-sm sticky top-0 z-10">
+        <div class="p-4 text-center">
+            <h1 class="text-xl font-bold text-gray-800">AI 캐릭터 생성</h1>
+            <p class="text-sm text-gray-600 mt-1">나만의 소통 아바타 만들기</p>
+        </div>
+        
+        <!-- 진행 표시기 -->
+        <div class="px-4 pb-4">
+            <div class="flex items-center justify-center space-x-3">
+                <div class="step-circle bg-blue-500" id="dot1"></div>
+                <div class="w-8 h-0.5 bg-gray-300"></div>
+                <div class="step-circle bg-gray-300" id="dot2"></div>
+                <div class="w-8 h-0.5 bg-gray-300"></div>
+                <div class="step-circle bg-gray-300" id="dot3"></div>
+            </div>
+            <div class="flex justify-between mt-2 text-xs text-gray-600">
+                <span>업로드</span>
+                <span>캐릭터화</span>
+                <span>대화</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- 메인 콘텐츠 -->
+    <main class="p-4 space-y-4">
+        
+        <!-- 1단계: 이미지 업로드 -->
+        <section id="step1" class="bg-white rounded-2xl shadow p-6">
+            <div class="text-center">
+                <div class="text-4xl mb-4">📸</div>
+                <h2 class="text-lg font-bold mb-2">이미지 업로드</h2>
+                <p class="text-sm text-gray-600 mb-6">사진을 선택하고 정보를 입력하세요</p>
+                
+                <!-- 파일 업로드 -->
+                <div class="bg-blue-50 border-2 border-dashed border-blue-300 rounded-xl p-6 mb-6 touch-btn" onclick="document.getElementById('file').click()">
+                    <div class="w-16 h-16 bg-blue-200 rounded-full mx-auto mb-3 flex items-center justify-center">
+                        <span class="text-2xl">👤</span>
+                    </div>
+                    <p class="text-blue-700 font-medium">사진 선택</p>
+                    <p class="text-xs text-blue-600 mt-1">탭하여 업로드</p>
+                </div>
+                <input type="file" id="file" class="hidden" accept="image/*">
+                
+                <!-- 정보 입력 -->
+                <div class="space-y-3 mb-6">
+                    <select class="w-full p-3 border border-gray-300 rounded-xl">
+                        <option>나이대 선택</option>
+                        <option>10대</option>
+                        <option>20대</option>
+                        <option>30대</option>
+                        <option>40대</option>
+                    </select>
+                    <select class="w-full p-3 border border-gray-300 rounded-xl">
+                        <option>직업 선택</option>
+                        <option>학생</option>
+                        <option>직장인</option>
+                        <option>자영업</option>
+                        <option>프리랜서</option>
+                    </select>
+                    <select class="w-full p-3 border border-gray-300 rounded-xl">
+                        <option>스타일 선택</option>
+                        <option>친근한</option>
+                        <option>차분한</option>
+                        <option>활발한</option>
+                        <option>유머러스한</option>
+                    </select>
+                </div>
+                
+                <button class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-lg touch-btn" onclick="goToStep(2)">
+                    캐릭터 생성하기
+                </button>
+            </div>
+        </section>
+        
+        <!-- 2단계: 캐릭터화 (숨김) -->
+        <section id="step2" class="bg-white rounded-2xl shadow p-6 hidden">
+            <div class="text-center">
+                <div class="text-4xl mb-4">🎭</div>
+                <h2 class="text-lg font-bold mb-2">캐릭터 생성</h2>
+                <p class="text-sm text-gray-600 mb-6">AI가 당신의 캐릭터를 생성했습니다</p>
+                
+                <!-- 생성된 캐릭터 -->
+                <div class="bg-gradient-to-br from-green-100 to-blue-100 rounded-2xl p-6 mb-6">
+                    <div class="w-24 h-24 bg-green-300 rounded-full mx-auto mb-4 flex items-center justify-center relative">
+                        <span class="text-4xl">🤖</span>
+                        <div class="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                            <span class="text-white text-sm">✓</span>
+                        </div>
+                    </div>
+                    <h3 class="font-bold text-green-800 mb-2">생성 완료!</h3>
+                    <p class="text-sm text-green-700">당신만의 캐릭터가 준비되었습니다</p>
+                </div>
+                
+                <!-- 스타일 선택 -->
+                <div class="mb-6">
+                    <p class="text-sm font-medium mb-3">캐릭터 스타일</p>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button class="p-4 border-2 border-blue-500 bg-blue-50 rounded-xl touch-btn">
+                            <div class="text-xl mb-1">😊</div>
+                            <span class="text-sm text-blue-700">리얼리스틱</span>
+                        </button>
+                        <button class="p-4 border border-gray-300 rounded-xl touch-btn">
+                            <div class="text-xl mb-1">🎨</div>
+                            <span class="text-sm">카툰</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="flex space-x-3">
+                    <button class="flex-1 py-3 border border-gray-300 rounded-xl touch-btn" onclick="goToStep(1)">
+                        이전
+                    </button>
+                    <button class="flex-1 py-3 bg-green-600 text-white rounded-xl font-bold touch-btn" onclick="goToStep(3)">
+                        대화 시작
+                    </button>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 3단계: 대화 (숨김) -->
+        <section id="step3" class="hidden space-y-4">
+            <!-- 캐릭터 상태 -->
+            <div class="bg-white rounded-2xl shadow p-6 text-center">
+                <div class="text-4xl mb-3">💬</div>
+                <h2 class="text-lg font-bold mb-2">소통 아바타</h2>
+                <div class="w-20 h-20 bg-purple-300 rounded-full mx-auto mb-3 flex items-center justify-center relative">
+                    <span class="text-3xl">🤖</span>
+                    <div class="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full animate-pulse"></div>
+                </div>
+                <p class="text-sm text-green-600">온라인 상태</p>
+            </div>
+            
+            <!-- 상황 선택 -->
+            <div class="bg-white rounded-2xl shadow p-6">
+                <h3 class="font-bold mb-4">상황 선택</h3>
+                <div class="grid grid-cols-2 gap-3">
+                    <button class="p-4 bg-blue-100 border-2 border-blue-500 rounded-xl text-center touch-btn">
+                        <div class="text-2xl mb-1">☕</div>
+                        <span class="text-sm text-blue-700 font-medium">카페</span>
+                    </button>
+                    <button class="p-4 border border-gray-300 rounded-xl text-center touch-btn">
+                        <div class="text-2xl mb-1">🎡</div>
+                        <span class="text-sm">놀이공원</span>
+                    </button>
+                    <button class="p-4 border border-gray-300 rounded-xl text-center touch-btn">
+                        <div class="text-2xl mb-1">🎬</div>
+                        <span class="text-sm">영화관</span>
+                    </button>
+                    <button class="p-4 border border-gray-300 rounded-xl text-center touch-btn">
+                        <div class="text-2xl mb-1">🏫</div>
+                        <span class="text-sm">학교</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 대화 입력 -->
+            <div class="bg-white rounded-2xl shadow p-6">
+                <h3 class="font-bold mb-4">대화하기</h3>
+                <div class="space-y-3">
+                    <div class="flex space-x-2">
+                        <button class="flex-1 p-3 bg-blue-100 text-blue-800 rounded-xl text-sm font-medium touch-btn">
+                            💬 텍스트
+                        </button>
+                        <button class="flex-1 p-3 border border-gray-300 rounded-xl text-sm touch-btn">
+                            🎨 그림
+                        </button>
+                        <button class="flex-1 p-3 border border-gray-300 rounded-xl text-sm touch-btn">
+                            🎤 음성
+                        </button>
+                    </div>
+                    <textarea 
+                        placeholder="대화 내용을 입력하세요..."
+                        class="w-full p-4 border border-gray-300 rounded-xl resize-none"
+                        rows="3"
+                    ></textarea>
+                    <button class="w-full p-4 bg-blue-600 text-white rounded-xl font-bold touch-btn">
+                        전송하기
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 행동 선택 -->
+            <div class="bg-white rounded-2xl shadow p-6">
+                <h3 class="font-bold mb-4">행동 선택</h3>
+                <div class="space-y-2">
+                    <button class="w-full p-4 text-left border border-gray-300 rounded-xl touch-btn hover:bg-gray-50">
+                        🍜 라면 먹기
+                    </button>
+                    <button class="w-full p-4 text-left border border-gray-300 rounded-xl touch-btn hover:bg-gray-50">
+                        🍔 햄버거 먹기
+                    </button>
+                    <button class="w-full p-4 text-left border border-gray-300 rounded-xl touch-btn hover:bg-gray-50">
+                        ☕ 커피 마시기
+                    </button>
+                    <button class="w-full p-4 text-left border border-gray-300 rounded-xl touch-btn hover:bg-gray-50">
+                        🚶 산책하기
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 하단 고정 메뉴 -->
+    <footer class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4">
+        <div class="text-center mb-3">
+            <p class="text-xs text-gray-600">대화 모드 선택</p>
+        </div>
+        <div class="flex space-x-2">
+            <button class="flex-1 bg-blue-600 text-white p-3 rounded-xl text-sm font-bold touch-btn" onclick="openChat('나와의 대화')">
+                나와의<br>대화
+            </button>
+            <button class="flex-1 bg-blue-600 text-white p-3 rounded-xl text-sm font-bold touch-btn" onclick="openChat('1대1 대화')">
+                1대1<br>대화
+            </button>
+            <button class="flex-1 bg-blue-600 text-white p-3 rounded-xl text-sm font-bold touch-btn" onclick="openChat('N대1 대화')">
+                N대1<br>대화
+            </button>
+        </div>
+    </footer>
+
+    <script>
+        let currentStep = 1;
+        
+        function goToStep(step) {
+            // 현재 단계 숨기기
+            document.getElementById(`step${currentStep}`).classList.add('hidden');
+            document.getElementById(`dot${currentStep}`).classList.remove('bg-blue-500');
+            document.getElementById(`dot${currentStep}`).classList.add('bg-green-500');
+            
+            // 새 단계 보이기
+            currentStep = step;
+            document.getElementById(`step${step}`).classList.remove('hidden');
+            document.getElementById(`dot${step}`).classList.remove('bg-gray-300');
+            document.getElementById(`dot${step}`).classList.add('bg-blue-500');
+            
+            // 맨 위로 스크롤
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            // 진동 피드백 (지원되는 경우)
+            if ('vibrate' in navigator) {
+                navigator.vibrate(50);
+            }
+        }
+        
+        function openChat(mode) {
+            alert(`${mode} 모드가 선택되었습니다!\n실제 구현 시 해당 대화 화면으로 이동합니다.`);
+            
+            if ('vibrate' in navigator) {
+                navigator.vibrate(100);
+            }
+        }
+        
+        // 파일 선택 이벤트
+        document.getElementById('file').addEventListener('change', function(e) {
+            if (e.target.files[0]) {
+                alert('이미지가 업로드되었습니다!');
+                // 실제 구현에서는 이미지 미리보기를 추가
+            }
+        });
+        
+        // 상황/스타일 버튼 클릭 이벤트
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.grid button')) {
+                const buttons = e.target.closest('.grid').querySelectorAll('button');
+                buttons.forEach(btn => {
+                    btn.classList.remove('border-blue-500', 'bg-blue-50', 'bg-blue-100');
+                    btn.classList.add('border-gray-300');
+                });
+                
+                const clickedBtn = e.target.closest('button');
+                clickedBtn.classList.remove('border-gray-300');
+                clickedBtn.classList.add('border-blue-500', 'bg-blue-100');
+            }
+        });
+        
+        // 터치 최적화
+        document.addEventListener('touchstart', function() {}, { passive: true });
+        
+        // iOS Safari에서 뷰포트 높이 조정
+        function setViewportHeight() {
+            let vh = window.innerHeight * 0.01;
+            document.documentElement.style.setProperty('--vh', `${vh}px`);
+        }
+        
+        window.addEventListener('resize', setViewportHeight);
+        setViewportHeight();
+    </script>
+</body>
+</html> 

@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>AI 캐릭터 생성 - 모바일</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 모바일 최적화 스타일 */
+        .touch-action-manipulation {
+            touch-action: manipulation;
+        }
+        
+        .step-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+        
+        .step-active {
+            background-color: #3B82F6;
+            transform: scale(1.5);
+        }
+        
+        .step-completed {
+            background-color: #10B981;
+        }
+        
+        .step-pending {
+            background-color: #D1D5DB;
+        }
+        
+        .floating-action {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 50;
+        }
+        
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 40;
+            display: none;
+        }
+        
+        .modal-content {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 20px 20px 0 0;
+            max-height: 80vh;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+            z-index: 50;
+        }
+        
+        .modal-open {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-b from-blue-50 to-indigo-100 min-h-screen">
+    
+    <!-- 헤더 -->
+    <div class="bg-white shadow-sm sticky top-0 z-30">
+        <div class="px-4 py-3">
+            <h1 class="text-xl font-bold text-gray-800 text-center">AI 캐릭터 생성</h1>
+            <p class="text-sm text-gray-600 text-center mt-1">나만의 소통 방식을 만들어보세요</p>
+        </div>
+        
+        <!-- 진행 단계 표시 -->
+        <div class="px-4 pb-3">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <div class="step-indicator step-active" id="step1"></div>
+                    <span class="text-xs text-gray-600">업로드</span>
+                </div>
+                <div class="flex-1 h-0.5 bg-gray-200 mx-3"></div>
+                <div class="flex items-center space-x-2">
+                    <div class="step-indicator step-pending" id="step2"></div>
+                    <span class="text-xs text-gray-600">캐릭터화</span>
+                </div>
+                <div class="flex-1 h-0.5 bg-gray-200 mx-3"></div>
+                <div class="flex items-center space-x-2">
+                    <div class="step-indicator step-pending" id="step3"></div>
+                    <span class="text-xs text-gray-600">대화</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 메인 콘텐츠 -->
+    <div class="px-4 py-6 space-y-6">
+        
+        <!-- 1단계: 이미지 업로드 -->
+        <div id="uploadStep" class="bg-white rounded-2xl shadow-lg p-6">
+            <div class="text-center">
+                <div class="text-4xl mb-4">📸</div>
+                <h2 class="text-lg font-bold text-gray-800 mb-2">이미지 업로드</h2>
+                <p class="text-sm text-gray-600 mb-6">사진을 업로드하고 캐릭터 정보를 입력하세요</p>
+                
+                <!-- 이미지 업로드 영역 -->
+                <div class="bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl p-8 mb-6 touch-action-manipulation" onclick="triggerFileUpload()">
+                    <div id="uploadPlaceholder" class="text-center">
+                        <div class="w-20 h-20 bg-gray-200 rounded-full mx-auto mb-3 flex items-center justify-center">
+                            <span class="text-gray-500 text-xl">👤</span>
+                        </div>
+                        <p class="text-gray-600 font-medium">사진 선택</p>
+                        <p class="text-xs text-gray-500 mt-1">탭하여 업로드</p>
+                    </div>
+                    <div id="uploadPreview" class="hidden">
+                        <img id="previewImage" class="w-32 h-32 rounded-full mx-auto object-cover" />
+                        <p class="text-sm text-green-600 mt-2">✓ 업로드 완료</p>
+                    </div>
+                </div>
+                
+                <input type="file" id="fileInput" class="hidden" accept="image/*" onchange="handleFileUpload(event)">
+                
+                <!-- 캐릭터 정보 입력 -->
+                <div class="grid grid-cols-3 gap-3 mb-6">
+                    <div>
+                        <label class="block text-xs text-gray-600 mb-1">나이</label>
+                        <select class="w-full p-2 border border-gray-300 rounded-lg text-sm">
+                            <option>20대</option>
+                            <option>30대</option>
+                            <option>40대</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-600 mb-1">직업</label>
+                        <select class="w-full p-2 border border-gray-300 rounded-lg text-sm">
+                            <option>학생</option>
+                            <option>직장인</option>
+                            <option>자영업</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-600 mb-1">스타일</label>
+                        <select class="w-full p-2 border border-gray-300 rounded-lg text-sm">
+                            <option>친근한</option>
+                            <option>차분한</option>
+                            <option>활발한</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <button class="w-full bg-blue-600 text-white py-3 rounded-xl font-medium touch-action-manipulation" onclick="nextStep(2)">
+                    다음 단계
+                </button>
+            </div>
+        </div>
+        
+        <!-- 2단계: 캐릭터화 (숨김) -->
+        <div id="characterStep" class="bg-white rounded-2xl shadow-lg p-6 hidden">
+            <div class="text-center">
+                <div class="text-4xl mb-4">🎭</div>
+                <h2 class="text-lg font-bold text-gray-800 mb-2">캐릭터화</h2>
+                <p class="text-sm text-gray-600 mb-6">AI가 당신의 캐릭터를 생성중입니다</p>
+                
+                <!-- 캐릭터 생성 영역 -->
+                <div class="bg-gradient-to-br from-green-50 to-blue-50 rounded-xl p-8 mb-6">
+                    <div class="w-24 h-24 bg-green-200 rounded-full mx-auto mb-4 flex items-center justify-center relative">
+                        <div class="text-3xl">🤖</div>
+                        <div class="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                            <span class="text-white text-xs">✓</span>
+                        </div>
+                    </div>
+                    <p class="text-green-700 font-medium mb-2">캐릭터 생성 완료!</p>
+                    <p class="text-xs text-gray-600">AI가 분석한 당신의 캐릭터</p>
+                </div>
+                
+                <!-- 변환 방식 선택 -->
+                <div class="mb-6">
+                    <p class="text-sm text-gray-700 mb-3">변환 방식 선택</p>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button class="p-3 border-2 border-blue-300 bg-blue-50 rounded-lg text-sm text-blue-700">
+                            리얼리스틱
+                        </button>
+                        <button class="p-3 border border-gray-300 rounded-lg text-sm text-gray-700">
+                            카툰
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-3">
+                    <button class="py-3 border border-gray-300 rounded-xl text-gray-700 touch-action-manipulation" onclick="prevStep(1)">
+                        이전
+                    </button>
+                    <button class="py-3 bg-green-600 text-white rounded-xl font-medium touch-action-manipulation" onclick="nextStep(3)">
+                        대화 시작
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 3단계: 소통 아바타 (숨김) -->
+        <div id="chatStep" class="hidden space-y-4">
+            <!-- 아바타 카드 -->
+            <div class="bg-white rounded-2xl shadow-lg p-6">
+                <div class="text-center">
+                    <div class="text-4xl mb-4">💬</div>
+                    <h2 class="text-lg font-bold text-gray-800 mb-2">소통 아바타</h2>
+                    <div class="w-20 h-20 bg-purple-200 rounded-full mx-auto mb-4 flex items-center justify-center relative">
+                        <div class="text-3xl">🤖</div>
+                        <div class="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full animate-pulse"></div>
+                    </div>
+                    <p class="text-sm text-gray-600">캐릭터가 준비되었습니다!</p>
+                </div>
+            </div>
+            
+            <!-- 상황 선택 -->
+            <div class="bg-white rounded-2xl shadow-lg p-6">
+                <h3 class="font-bold text-gray-800 mb-4">상황 선택</h3>
+                <div class="grid grid-cols-2 gap-3">
+                    <button class="p-4 border-2 border-blue-300 bg-blue-50 rounded-xl text-center touch-action-manipulation">
+                        <div class="text-2xl mb-1">☕</div>
+                        <span class="text-sm text-blue-700">카페</span>
+                    </button>
+                    <button class="p-4 border border-gray-300 rounded-xl text-center touch-action-manipulation">
+                        <div class="text-2xl mb-1">🎡</div>
+                        <span class="text-sm text-gray-700">놀이공원</span>
+                    </button>
+                    <button class="p-4 border border-gray-300 rounded-xl text-center touch-action-manipulation">
+                        <div class="text-2xl mb-1">🎬</div>
+                        <span class="text-sm text-gray-700">영화관</span>
+                    </button>
+                    <button class="p-4 border border-gray-300 rounded-xl text-center touch-action-manipulation">
+                        <div class="text-2xl mb-1">🏫</div>
+                        <span class="text-sm text-gray-700">학교</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 대화 입력 -->
+            <div class="bg-white rounded-2xl shadow-lg p-6">
+                <h3 class="font-bold text-gray-800 mb-4">대화 입력</h3>
+                <div class="space-y-3">
+                    <div class="flex space-x-2">
+                        <button class="flex-1 p-2 bg-blue-100 text-blue-800 rounded-lg text-sm touch-action-manipulation">
+                            문장(TTS)
+                        </button>
+                        <button class="flex-1 p-2 border border-gray-300 rounded-lg text-sm touch-action-manipulation">
+                            그림 생성
+                        </button>
+                    </div>
+                    <textarea 
+                        placeholder="대화 내용을 입력하세요..."
+                        class="w-full p-3 border border-gray-300 rounded-lg resize-none text-sm"
+                        rows="3"
+                    ></textarea>
+                    <button class="w-full p-3 bg-blue-600 text-white rounded-lg font-medium touch-action-manipulation">
+                        발화하기
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 행동 입력 -->
+            <div class="bg-white rounded-2xl shadow-lg p-6">
+                <h3 class="font-bold text-gray-800 mb-4">행동 입력</h3>
+                <div class="space-y-2">
+                    <button class="w-full p-3 text-left border border-gray-300 rounded-lg touch-action-manipulation">
+                        🍜 라면 먹기
+                    </button>
+                    <button class="w-full p-3 text-left border border-gray-300 rounded-lg touch-action-manipulation">
+                        🍔 햄버거 먹기
+                    </button>
+                    <button class="w-full p-3 text-left border border-gray-300 rounded-lg touch-action-manipulation">
+                        ☕ 커피 마시기
+                    </button>
+                    <button class="w-full p-3 text-left border border-gray-300 rounded-lg touch-action-manipulation">
+                        🚶 산책하기
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 하단 대화 모드 (고정) -->
+    <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4">
+        <div class="grid grid-cols-3 gap-2">
+            <button class="bg-blue-600 text-white p-3 rounded-lg text-xs font-medium touch-action-manipulation" onclick="openChatModal('self')">
+                나와의 대화
+            </button>
+            <button class="bg-blue-600 text-white p-3 rounded-lg text-xs font-medium touch-action-manipulation" onclick="openChatModal('one')">
+                1대1 대화
+            </button>
+            <button class="bg-blue-600 text-white p-3 rounded-lg text-xs font-medium touch-action-manipulation" onclick="openChatModal('group')">
+                N대1 대화
+            </button>
+        </div>
+    </div>
+
+    <!-- 모달 오버레이 -->
+    <div class="modal-overlay" id="modalOverlay" onclick="closeModal()"></div>
+    
+    <!-- 대화 모드 모달 -->
+    <div class="modal-content" id="chatModal">
+        <div class="p-4 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <h3 class="font-bold text-lg" id="modalTitle">대화 모드</h3>
+                <button onclick="closeModal()" class="text-gray-500 text-xl">&times;</button>
+            </div>
+        </div>
+        <div class="p-4" id="modalContent">
+            <!-- 모달 내용이 여기에 동적으로 추가됩니다 -->
+        </div>
+    </div>
+
+    <!-- 여백 (하단 버튼 공간) -->
+    <div class="h-20"></div>
+
+    <script>
+        let currentStep = 1;
+        
+        function triggerFileUpload() {
+            document.getElementById('fileInput').click();
+        }
+        
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('previewImage').src = e.target.result;
+                    document.getElementById('uploadPlaceholder').classList.add('hidden');
+                    document.getElementById('uploadPreview').classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+        
+        function nextStep(step) {
+            // 이전 단계 숨기기
+            document.getElementById(`step${currentStep}`).classList.remove('step-active');
+            document.getElementById(`step${currentStep}`).classList.add('step-completed');
+            
+            if (currentStep === 1) document.getElementById('uploadStep').classList.add('hidden');
+            if (currentStep === 2) document.getElementById('characterStep').classList.add('hidden');
+            
+            // 다음 단계 보이기
+            currentStep = step;
+            document.getElementById(`step${step}`).classList.remove('step-pending');
+            document.getElementById(`step${step}`).classList.add('step-active');
+            
+            if (step === 2) document.getElementById('characterStep').classList.remove('hidden');
+            if (step === 3) document.getElementById('chatStep').classList.remove('hidden');
+            
+            // 페이지 상단으로 스크롤
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        
+        function prevStep(step) {
+            // 현재 단계 숨기기
+            document.getElementById(`step${currentStep}`).classList.remove('step-active');
+            document.getElementById(`step${currentStep}`).classList.add('step-pending');
+            
+            if (currentStep === 2) document.getElementById('characterStep').classList.add('hidden');
+            if (currentStep === 3) document.getElementById('chatStep').classList.add('hidden');
+            
+            // 이전 단계 보이기
+            currentStep = step;
+            document.getElementById(`step${step}`).classList.remove('step-completed');
+            document.getElementById(`step${step}`).classList.add('step-active');
+            
+            if (step === 1) document.getElementById('uploadStep').classList.remove('hidden');
+            if (step === 2) document.getElementById('characterStep').classList.remove('hidden');
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        
+        function openChatModal(type) {
+            const modal = document.getElementById('chatModal');
+            const overlay = document.getElementById('modalOverlay');
+            const title = document.getElementById('modalTitle');
+            const content = document.getElementById('modalContent');
+            
+            const modes = {
+                'self': {
+                    title: '나와의 대화',
+                    content: `
+                        <div class="space-y-4">
+                            <div class="bg-blue-50 p-4 rounded-lg">
+                                <h4 class="font-medium text-blue-800 mb-2">자기 인식 강화</h4>
+                                <p class="text-sm text-blue-700">• 내면의 목소리와 대화하기</p>
+                                <p class="text-sm text-blue-700">• 감정 상태 파악 및 조절</p>
+                            </div>
+                            <div class="bg-green-50 p-4 rounded-lg">
+                                <h4 class="font-medium text-green-800 mb-2">감정 안정</h4>
+                                <p class="text-sm text-green-700">• 스트레스 해소 대화</p>
+                                <p class="text-sm text-green-700">• 마음의 평화 찾기</p>
+                            </div>
+                            <button class="w-full bg-blue-600 text-white p-3 rounded-lg font-medium">대화 시작하기</button>
+                        </div>
+                    `
+                },
+                'one': {
+                    title: '1대1 대화',
+                    content: `
+                        <div class="space-y-4">
+                            <div class="bg-purple-50 p-4 rounded-lg">
+                                <h4 class="font-medium text-purple-800 mb-2">맞춤형 대화 지원</h4>
+                                <p class="text-sm text-purple-700">• 개인 맞춤 대화 스타일</p>
+                                <p class="text-sm text-purple-700">• 상황에 맞는 반응</p>
+                            </div>
+                            <div class="bg-orange-50 p-4 rounded-lg">
+                                <h4 class="font-medium text-orange-800 mb-2">표현력 향상</h4>
+                                <p class="text-sm text-orange-700">• 대화 스킬 개발</p>
+                                <p class="text-sm text-orange-700">• 반응 속도 향상</p>
+                            </div>
+                            <button class="w-full bg-purple-600 text-white p-3 rounded-lg font-medium">대화 시작하기</button>
+                        </div>
+                    `
+                },
+                'group': {
+                    title: 'N대1 대화',
+                    content: `
+                        <div class="space-y-4">
+                            <div class="bg-red-50 p-4 rounded-lg">
+                                <h4 class="font-medium text-red-800 mb-2">교육 & 워크샵</h4>
+                                <p class="text-sm text-red-700">• 그룹 학습 지원</p>
+                                <p class="text-sm text-red-700">• 팀워크 강화</p>
+                            </div>
+                            <div class="bg-indigo-50 p-4 rounded-lg">
+                                <h4 class="font-medium text-indigo-800 mb-2">상호 이해 증진</h4>
+                                <p class="text-sm text-indigo-700">• 다양한 관점 수용</p>
+                                <p class="text-sm text-indigo-700">• 커뮤니케이션 개선</p>
+                            </div>
+                            <button class="w-full bg-red-600 text-white p-3 rounded-lg font-medium">대화 시작하기</button>
+                        </div>
+                    `
+                }
+            };
+            
+            title.textContent = modes[type].title;
+            content.innerHTML = modes[type].content;
+            
+            overlay.style.display = 'block';
+            setTimeout(() => {
+                modal.classList.add('modal-open');
+            }, 10);
+        }
+        
+        function closeModal() {
+            const modal = document.getElementById('chatModal');
+            const overlay = document.getElementById('modalOverlay');
+            
+            modal.classList.remove('modal-open');
+            setTimeout(() => {
+                overlay.style.display = 'none';
+            }, 300);
+        }
+        
+        // 터치 이벤트 최적화
+        document.addEventListener('touchstart', function() {}, { passive: true });
+        
+        // 뒤로가기 버튼 처리
+        window.addEventListener('popstate', function(e) {
+            if (currentStep > 1) {
+                prevStep(currentStep - 1);
+            }
+        });
+    </script>
+</body>
+</html> 
