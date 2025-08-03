@@ -7,11 +7,11 @@
   "volumeMounts": [
     {
       "hostPath": "/data/aicovergen/models",
-      "containerPath": "/app/rvc_models"
+      "containerPath": "/runpod-volume/rvc_models"
     },
     {
       "hostPath": "/data/aicovergen/mdxnet",
-      "containerPath": "/app/uvr_models"
+      "containerPath": "/runpod-volume/uvr_models"
     }
   ],
   "env": [

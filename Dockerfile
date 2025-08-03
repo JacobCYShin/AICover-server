@@ -36,11 +36,10 @@ COPY . /app/AICover-server
 
 ENV LD_LIBRARY_PATH=/usr/local/lib/python3.10/dist-packages/nvidia/cudnn/lib:$LD_LIBRARY_PATH
 
-# 필요한 requirements 설치
+# 필요한 requirements 설치 - 캐시 무시하고 강제 재설치
+# (onnxruntime-gpu는 이미 CUDA 12 호환 버전으로 설치됨)
 RUN pip install --upgrade "pip<24.0" && \
-    pip install --no-cache-dir -r /app/AICover-server/builder/requirements.txt && \
-    pip uninstall -y onnxruntime-gpu && \
-    pip install onnxruntime-gpu --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/
+    pip install --no-cache-dir --force-reinstall -r /app/AICover-server/builder/requirements.txt
 
 # cuDNN 라이브러리 심볼릭 링크 (onnxruntime이 찾을 수 있도록) - simplified version from Dockerfile.ubuntu
 RUN ln -s /usr/local/lib/python3.10/dist-packages/nvidia/cudnn/lib/libcudnn.so.9 /usr/lib/libcudnn.so.9 && \
@@ -51,15 +50,17 @@ RUN ln -s /usr/local/lib/python3.10/dist-packages/nvidia/cudnn/lib/libcudnn.so.9
 # 작업 디렉토리를 AICover-server로 변경 (handler.py가 run.py를 찾을 수 있도록)
 WORKDIR /app/AICover-server
 
-# UVR 모델 디렉토리 미리 생성 및 환경변수 설정
-RUN mkdir -p /app/AICover-server/uvr_models
-ENV AUDIO_SEPARATOR_MODEL_DIR=/app/AICover-server/uvr_models
-
-# RunPod 네트워크 볼륨 마운트 포인트 준비 - 경로 수정
-# /runpod-volume/rvc_models → /app/rvc_models 연결을 위한 심볼릭 링크 (src/handler.py가 /app/rvc_models를 참조)
+# RunPod 네트워크 볼륨 마운트 포인트 준비
+# rvc_models와 uvr_models 모두 /runpod-volume/에서 마운트됨
 RUN rm -rf /app/AICover-server/rvc_models && \
+    rm -rf /app/AICover-server/uvr_models && \
     mkdir -p /runpod-volume/rvc_models && \
-    ln -s /runpod-volume/rvc_models /app/rvc_models
+    mkdir -p /runpod-volume/uvr_models && \
+    ln -s /runpod-volume/rvc_models /app/rvc_models && \
+    ln -s /runpod-volume/uvr_models /app/AICover-server/uvr_models
+
+# UVR 모델 디렉토리 환경변수 설정 (심볼릭 링크된 경로 사용)
+ENV AUDIO_SEPARATOR_MODEL_DIR=/app/AICover-server/uvr_models
 
 # 선택사항: UVR 모델들을 빌드 시 미리 다운로드 (Cold start 최적화)
 # 주석을 해제하면 빌드 시 다운로드됩니다

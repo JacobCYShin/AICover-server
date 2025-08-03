@@ -39,7 +39,7 @@ torchcrepe==0.0.20       # 위 목록 기준
 torchfcpe
 fairseq==0.12.2
 onnx2torch>=1.5
-onnxruntime-gpu==1.17.1
+# onnxruntime-gpu==1.17.1  # Dockerfile에서 CUDA 12 호환 버전으로 별도 설치
 numba                   # linux용 일반 버전
 numba==0.61.0; sys_platform == 'darwin' or sys_platform == 'win32'
 omegaconf>=2.0.6; sys_platform == 'darwin'
@@ -58,7 +58,7 @@ rotary-embedding-torch==0.6.1
 matplotlib==3.7.2
 tensorboard
 tensorboardX
-gradio==3.39.0          # 위 목록 우선
+gradio>=3.39.0          # 최소 3.39.0 이상
 
 # =========================
 # Miscellaneous utilities
