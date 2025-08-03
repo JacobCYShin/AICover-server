@@ -16,11 +16,6 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 RUN python3 -m pip install --upgrade pip
-
-# Install the CUDA 12 compatible version of ONNXRuntime (from Dockerfile.audio-separator)
-# See https://onnxruntime.ai/docs/install/
-RUN pip install onnxruntime-gpu --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/
-
 # Install audio-separator without any specific onnxruntime (from Dockerfile.audio-separator)
 RUN --mount=type=cache,target=/root/.cache \
     pip3 install "audio-separator"
@@ -40,6 +35,11 @@ ENV LD_LIBRARY_PATH=/usr/local/lib/python3.10/dist-packages/nvidia/cudnn/lib:$LD
 # (onnxruntime-gpu는 이미 CUDA 12 호환 버전으로 설치됨)
 RUN pip install --upgrade "pip<24.0" && \
     pip install --no-cache-dir --force-reinstall -r /app/AICover-server/builder/requirements.txt
+
+# Install the CUDA 12 compatible version of ONNXRuntime (from Dockerfile.audio-separator)
+# See https://onnxruntime.ai/docs/install/
+RUN pip install onnxruntime-gpu --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/
+
 
 # cuDNN 라이브러리 심볼릭 링크 (onnxruntime이 찾을 수 있도록) - simplified version from Dockerfile.ubuntu
 RUN ln -s /usr/local/lib/python3.10/dist-packages/nvidia/cudnn/lib/libcudnn.so.9 /usr/lib/libcudnn.so.9 && \
