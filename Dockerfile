@@ -36,9 +36,7 @@ ENV LD_LIBRARY_PATH=/usr/local/lib/python3.10/dist-packages/nvidia/cudnn/lib:$LD
 RUN pip install --upgrade "pip<24.0" && \
     pip install --no-cache-dir --force-reinstall -r /app/AICover-server/builder/requirements.txt
 
-# Install the CUDA 12 compatible version of ONNXRuntime (from Dockerfile.audio-separator)
-# See https://onnxruntime.ai/docs/install/
-RUN pip install onnxruntime-gpu --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/
+# ONNX Runtime is now installed via requirements.txt with the correct version (1.22.0)
 
 
 # cuDNN 라이브러리 심볼릭 링크 (onnxruntime이 찾을 수 있도록) - simplified version from Dockerfile.ubuntu

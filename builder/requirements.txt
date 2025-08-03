@@ -38,17 +38,16 @@ torchvision
 torchcrepe==0.0.20       # 위 목록 기준
 torchfcpe
 fairseq==0.12.2
-onnx2torch>=1.5
-# onnxruntime-gpu==1.17.1  # Dockerfile에서 CUDA 12 호환 버전으로 별도 설치
-numba                   # linux용 일반 버전
-numba==0.61.0; sys_platform == 'darwin' or sys_platform == 'win32'
-omegaconf>=2.0.6; sys_platform == 'darwin'
+onnx2torch==1.5.15  # 잘 동작하는 컨테이너에서 확인된 버전
+onnxruntime-gpu==1.22.0  # 잘 동작하는 컨테이너에서 확인된 버전
+numba==0.61.2  # 잘 동작하는 컨테이너에서 확인된 버전
+omegaconf==2.0.6  # 잘 동작하는 컨테이너에서 확인된 버전
 transformers==4.44.2
-einops
-diffq>=0.2
-julius>=0.2
+einops==0.8.1  # 잘 동작하는 컨테이너에서 확인된 버전
+diffq==0.2.4  # 잘 동작하는 컨테이너에서 확인된 버전
+julius==0.2.7  # 잘 동작하는 컨테이너에서 확인된 버전
 ml_collections
-resampy>=0.4
+resampy==0.4.3  # 잘 동작하는 컨테이너에서 확인된 버전
 beartype==0.18.5
 rotary-embedding-torch==0.6.1
 
