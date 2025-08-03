@@ -315,18 +315,39 @@ class Separator:
         """Load a separation model."""
         model_path = os.path.join(self.model_file_dir, model_filename)
         
+        self.logger.info(f"Loading model from: {model_path}")
+        self.logger.info(f"Model directory: {self.model_file_dir}")
+        self.logger.info(f"Model filename: {model_filename}")
+        
         if not os.path.exists(model_path):
             self.logger.error(f"Model file not found: {model_path}")
             raise FileNotFoundError(f"Model file not found: {model_path}")
 
+        # 파일 크기 확인
+        file_size = os.path.getsize(model_path)
+        self.logger.info(f"Model file size: {file_size} bytes")
+        
+        if file_size == 0:
+            self.logger.error(f"Model file is empty: {model_path}")
+            raise ValueError(f"Model file is empty: {model_path}")
+
         # Determine model architecture based on file extension
         if model_filename.endswith('.onnx'):
-            self.model_instance = MDXSeparator(
-                model_path=model_path,
-                device=self.torch_device,
-                use_autocast=self.use_autocast,
-                **self.arch_specific_params["MDX"]
-            )
+            try:
+                self.logger.info(f"Loading ONNX model: {model_filename}")
+                self.model_instance = MDXSeparator(
+                    model_path=model_path,
+                    device=self.torch_device,
+                    use_autocast=self.use_autocast,
+                    **self.arch_specific_params["MDX"]
+                )
+                self.logger.info(f"ONNX model loaded successfully: {model_filename}")
+            except Exception as e:
+                self.logger.error(f"Failed to load ONNX model {model_filename}: {e}")
+                self.logger.error(f"Model path: {model_path}")
+                self.logger.error(f"File exists: {os.path.exists(model_path)}")
+                self.logger.error(f"File size: {os.path.getsize(model_path) if os.path.exists(model_path) else 'N/A'}")
+                raise
         elif model_filename.endswith('.pth'):
             # This would need to be implemented based on the specific model type
             self.logger.info(f"Loading PyTorch model: {model_filename}")

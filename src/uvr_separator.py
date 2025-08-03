@@ -84,7 +84,12 @@ def run_uvr_separation(song_input, output_dir, song_id, is_webui, input_type, pr
     
     # Step 1: Separate Vocals and Instrumental
     display_progress('[~] Separating Vocals from Instrumental...', 0.1, is_webui, progress)
-    separator.load_model(model_filename='Kim_Vocal_1.onnx')
+    # Kim_Vocal_1.onnx가 손상된 경우 대체 모델 사용
+    try:
+        separator.load_model(model_filename='Kim_Vocal_1.onnx')
+    except Exception as e:
+        print(f"Kim_Vocal_1.onnx 로드 실패, 대체 모델 사용: {e}")
+        separator.load_model(model_filename='UVR_MDXNET_KARA.onnx')
     voc_inst = separator.separate(song_input)
     
     # Rename files to standard names
