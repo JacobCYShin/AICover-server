@@ -38,6 +38,7 @@ torchvision
 torchcrepe==0.0.20       # 위 목록 기준
 torchfcpe
 fairseq==0.12.2
+onnx==1.18.0  # 잘 동작하는 컨테이너에서 확인된 버전
 onnx2torch==1.5.15  # 잘 동작하는 컨테이너에서 확인된 버전
 onnxruntime-gpu==1.22.0  # 잘 동작하는 컨테이너에서 확인된 버전
 numba==0.61.2  # 잘 동작하는 컨테이너에서 확인된 버전
