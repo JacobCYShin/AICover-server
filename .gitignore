@@ -1,5 +1,6 @@
 # MDX Models
 uvr_models/*.onnx
+uvr_models/*.pth
 
 # RVC Models
 rvc_models/*/*.pth
