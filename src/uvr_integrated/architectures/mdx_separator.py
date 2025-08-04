@@ -10,6 +10,7 @@ import onnx2torch
 from tqdm import tqdm
 import librosa
 import soundfile as sf
+from onnx import version_converter
 
 # Import local modules
 from ..uvr_lib_v5 import spec_utils
@@ -22,6 +23,57 @@ class MDXSeparator(CommonSeparator):
     MDXSeparator is responsible for separating audio sources using MDX models.
     It initializes with configuration parameters and prepares the model for separation tasks.
     """
+
+    def check_and_upgrade_onnx_model(self, model_path):
+        """
+        Check ONNX model IR version and upgrade if necessary.
+        
+        Args:
+            model_path (str): Path to the ONNX model file
+            
+        Returns:
+            bool: True if model was upgraded, False if no upgrade needed
+        """
+        try:
+            self.logger.info(f"Checking ONNX model IR version: {model_path}")
+            
+            # Load the model to check IR version
+            model = onnx.load(model_path)
+            current_ir_version = model.ir_version
+            self.logger.info(f"Current ONNX IR version: {current_ir_version}")
+            
+            # Check if upgrade is needed (IR version < 3)
+            if current_ir_version < 3:
+                self.logger.warning(f"ONNX model IR version {current_ir_version} is too old (minimum supported: 3)")
+                self.logger.info("Starting ONNX model upgrade...")
+                
+                try:
+                    # Convert to IR version 7 (modern version)
+                    target_version = 7
+                    self.logger.info(f"Converting ONNX model to IR version {target_version}...")
+                    converted_model = version_converter.convert_version(model, target_version)
+                    
+                    # Save the converted model back to the same path
+                    onnx.save(converted_model, model_path)
+                    
+                    # Verify the conversion
+                    verification_model = onnx.load(model_path)
+                    new_ir_version = verification_model.ir_version
+                    self.logger.info(f"ONNX model successfully upgraded to IR version {new_ir_version}")
+                    
+                    return True
+                    
+                except Exception as e:
+                    self.logger.error(f"Failed to upgrade ONNX model: {e}")
+                    self.logger.warning("Keeping original model file (upgrade failed)")
+                    return False
+            else:
+                self.logger.info(f"ONNX model IR version {current_ir_version} is compatible (>= 3)")
+                return False
+                
+        except Exception as e:
+            self.logger.error(f"Error checking ONNX model version: {e}")
+            return False
 
     def __init__(self, model_path, device, use_autocast=False, **arch_config):
         """
@@ -100,6 +152,13 @@ class MDXSeparator(CommonSeparator):
         and prepare for inferencing using hardware accelerated Torch device.
         """
         self.logger.debug("Loading ONNX model for inference...")
+        
+        # Check and upgrade ONNX model if necessary
+        model_upgraded = self.check_and_upgrade_onnx_model(self.model_path)
+        if model_upgraded:
+            self.logger.info("ONNX model was upgraded, proceeding with loading...")
+        else:
+            self.logger.info("ONNX model version check completed, proceeding with loading...")
 
         if self.segment_size == self.dim_t:
             ort_session_options = ort.SessionOptions()
