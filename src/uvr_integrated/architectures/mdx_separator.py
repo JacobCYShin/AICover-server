@@ -25,54 +25,36 @@ class MDXSeparator(CommonSeparator):
     """
 
     def check_and_upgrade_onnx_model(self, model_path):
-        """
-        Check ONNX model IR version and upgrade if necessary.
-        
-        Args:
-            model_path (str): Path to the ONNX model file
-            
-        Returns:
-            bool: True if model was upgraded, False if no upgrade needed
-        """
         try:
-            self.logger.info(f"Checking ONNX model IR version: {model_path}")
-            
-            # Load the model to check IR version
+            self.logger.info(f"Checking ONNX model: {model_path}")
             model = onnx.load(model_path)
+
             current_ir_version = model.ir_version
-            self.logger.info(f"Current ONNX IR version: {current_ir_version}")
-            
-            # Check if upgrade is needed (IR version < 3)
+            current_opset_version = model.opset_import[0].version if model.opset_import else "Unknown"
+            self.logger.info(f"ONNX IR version: {current_ir_version}")
+            self.logger.info(f"ONNX opset version: {current_opset_version}")
+
+            # Case 1: IR version is too low
             if current_ir_version < 3:
-                self.logger.warning(f"ONNX model IR version {current_ir_version} is too old (minimum supported: 3)")
-                self.logger.info("Starting ONNX model upgrade...")
-                
-                try:
-                    # Convert to IR version 7 (modern version)
-                    target_version = 7
-                    self.logger.info(f"Converting ONNX model to IR version {target_version}...")
-                    converted_model = version_converter.convert_version(model, target_version)
-                    
-                    # Save the converted model back to the same path
-                    onnx.save(converted_model, model_path)
-                    
-                    # Verify the conversion
-                    verification_model = onnx.load(model_path)
-                    new_ir_version = verification_model.ir_version
-                    self.logger.info(f"ONNX model successfully upgraded to IR version {new_ir_version}")
-                    
-                    return True
-                    
-                except Exception as e:
-                    self.logger.error(f"Failed to upgrade ONNX model: {e}")
-                    self.logger.warning("Keeping original model file (upgrade failed)")
-                    return False
-            else:
-                self.logger.info(f"ONNX model IR version {current_ir_version} is compatible (>= 3)")
+                self.logger.warning(f"IR version {current_ir_version} too old, upgrading...")
+                target_version = 7
+                converted_model = version_converter.convert_version(model, target_version)
+                onnx.save(converted_model, model_path)
+                self.logger.info("Model successfully upgraded.")
+                return True
+
+            # Case 2: IR version OK, but opset too old (e.g., < 11)
+            elif current_opset_version < 11:
+                self.logger.warning(f"Opset version {current_opset_version} is old. Consider re-exporting the model using PyTorch with opset_version=17.")
                 return False
-                
+
+            # Case 3: Model is OK
+            else:
+                self.logger.info("Model IR and opset versions are compatible.")
+                return False
+
         except Exception as e:
-            self.logger.error(f"Error checking ONNX model version: {e}")
+            self.logger.error(f"Error while checking/upgrading ONNX model: {e}")
             return False
 
     def __init__(self, model_path, device, use_autocast=False, **arch_config):
